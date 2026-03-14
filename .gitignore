@@ -1,0 +1,49 @@
+# ============================================================
+# MCQ Generator - .gitignore
+# ============================================================
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Environment & Secret Keys
+.env
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Generated Output Files
+output/
+
+# Input PDF Files
+*.pdf
+
+# Pytest & Testing Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.suo
+*.user
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Distribution / Build
+dist/
+build/
+*.egg-info/

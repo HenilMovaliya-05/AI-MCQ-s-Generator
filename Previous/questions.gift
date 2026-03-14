@@ -1,0 +1,69 @@
+::Q1:: What is the primary purpose of Logistic Regression? {
+    ~Solving regression problems
+    =Solving classification problems
+    ~Feature scaling
+    ~Data visualization
+}
+
+::Q2:: Which of the following is an example of a classification problem? {
+    ~Predicting house prices
+    ~Predicting weather temperature
+    =Identifying spam emails
+    ~Predicting stock prices
+}
+
+::Q3:: What type of predicted value does Logistic Regression produce? {
+    ~Continuous
+    =Categorical
+    ~Both continuous and categorical
+    ~Neither continuous nor categorical
+}
+
+::Q4:: What is the key difference between Binary and Multivariate Logistic Regression? {
+    ~Number of input features
+    =Number of output classes
+    ~Type of data used
+    ~Algorithm used
+}
+
+::Q5:: In the context of Logistic Regression, what does the sigmoid function produce? {
+    ~A linear output
+    ~A categorical output
+    =A probability score
+    ~A binary output
+}
+
+::Q6:: Why is linear regression often unsuitable for classification problems directly? {
+    ~It produces categorical outputs
+    ~It's computationally expensive
+    =Its output range is unbounded
+    ~It requires large datasets
+}
+
+::Q7:: What is the shape of the cost function for Logistic Regression that is suitable for optimization? {
+    ~Non-convex
+    ~Linear
+    =Convex
+    ~Parabolic
+}
+
+::Q8:: What optimization algorithm is commonly used to find the optimal parameters in Logistic Regression? {
+    ~Linear Programming
+    =Gradient Descent
+    ~Newton's Method
+    ~Simulated Annealing
+}
+
+::Q9:: What is a decision boundary in the context of Logistic Regression? {
+    =A line separating different classes
+    ~The cost function value
+    ~The gradient of the cost function
+    ~The input features
+}
+
+::Q10:: What kind of learning technique is Logistic Regression? {
+    ~Unsupervised Learning
+    ~Reinforcement Learning
+    =Supervised Learning
+    ~Semi-supervised Learning
+}
