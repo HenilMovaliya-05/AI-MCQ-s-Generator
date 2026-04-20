@@ -16,3 +16,13 @@ colorama==0.4.6
 
 # Optional: export to PDF
 fpdf2==2.7.9
+
+#Fast-API related
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+python-multipart==0.0.9
+pydantic==2.7.0
+
+#Streamlit
+streamlit==1.30.0
+requests==2.31.0

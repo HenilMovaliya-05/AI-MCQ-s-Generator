@@ -4,8 +4,8 @@
 
 # Virtual Environment
 venv/
-env/
 .venv/
+env/
 ENV/
 
 # Environment & Secret Keys

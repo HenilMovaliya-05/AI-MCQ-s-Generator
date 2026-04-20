@@ -4,17 +4,38 @@ A smart Multiple Choice Question generator that uses **NLP for intelligent prepr
 
 ---
 
-##  Project Architecture
+## 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| 🔗 REST API | `https://ai-mcq-generator-api.onrender.com` |
+| 📖 API Docs (Swagger) | `https://ai-mcq-generator-api.onrender.com/docs` |
+| 💻 GitHub | `https://github.com/HenilMovaliya-05/AI-MCQs-Generator` |
+
+---
+
+## 🏗️ Project Architecture
 
 ```
-mcq_generator/
+MCQ_Generator/
 │
 ├── main.py                    # CLI entry point (interactive mode)
 ├── pipeline.py                # Master orchestrator (ties all modules)
+├── run.py                     # FastAPI server entry point
 ├── requirements.txt           # Python dependencies
 ├── .env.example               # Environment config template
 ├── .gitignore                 # Git ignore rules
+├── render.yaml                # Render.com deployment config
+├── Procfile                   # Process file for deployment
 ├── sample_input.txt           # Sample text to test with
+│
+├── api/                       # FastAPI REST API Layer
+│   ├── __init__.py
+│   ├── app.py                 # API routes and endpoints
+│   └── models.py              # Pydantic request/response models
+│
+├── Streamlit/                 # Streamlit Web UI
+│   └── streamlit_app.py       # Interactive web interface
 │
 ├── nlp/                       # NLP Preprocessing Layer
 │   ├── __init__.py
@@ -38,17 +59,19 @@ mcq_generator/
 └── tests/                     # Unit tests
     ├── test_nlp.py            # Tests for chunker, keyword, topic modules
     ├── test_pipeline.py       # Tests for postprocessor and prompt builder
-    └── test_pdf_reader.py     # Tests for PDF extraction and cleaning
+    ├── test_pdf_reader.py     # Tests for PDF extraction and cleaning
+    └── test_api.py            # Tests for FastAPI endpoints
 ```
 
 ---
 
-##  How the Pipeline Works
+## ⚙️ How the Pipeline Works
 
 ```
 Input (.pdf / .txt / text string)
    ↓
 [PDF Reader]  pdfplumber (primary) + pypdf (fallback)
+              Auto-skips diagram/image-only pages
    ↓
 [NLP] Text Chunking       →  Split into paragraphs / sentence windows
 [NLP] Keyword Extraction  →  TF-IDF scoring + Named Entity Recognition
@@ -65,12 +88,12 @@ Final MCQ Set → JSON / TXT / PDF  (user chooses at runtime)
 
 ---
 
-##  Setup
+## 🚀 Setup
 
 ### 1. Create and activate Virtual Environment (recommended)
 
 ```bash
-cd mcq_generator
+cd MCQ_Generator
 
 # Create virtual environment
 python -m venv venv
@@ -121,7 +144,7 @@ deactivate
 
 ---
 
-##  Supported Input Formats
+## 📥 Supported Input Formats
 
 | Format | How to Use |
 |--------|-----------|
@@ -130,11 +153,12 @@ deactivate
 | Direct text | `python main.py --text "Your text here..."` |
 
 > **Note:** Scanned/image PDFs are not supported — the PDF must have selectable text.
-> For `.pdf` input, place your file inside the `mcq_generator/` folder or provide the full path.
+> Diagram-only pages (lecture slides with only images) are automatically detected and skipped.
+> For `.pdf` input, place your file inside the `MCQ_Generator/` folder or provide the full path.
 
 ---
 
-##  Output Formats
+## 📤 Output Formats
 
 Generated MCQs can be saved in three formats — chosen interactively at runtime or via `--format` flag:
 
@@ -148,7 +172,7 @@ Output files are saved automatically in the `output/` folder. The filename is au
 
 ---
 
-##  Usage
+## 💻 Usage — CLI (Command Line)
 
 ### Interactive Mode (recommended)
 
@@ -167,8 +191,7 @@ You will be prompted to choose:
 ### Command Line Mode (skip prompts)
 
 ```bash
-
-#Basic command
+# Basic command
 python main.py --file "your\file\path"
 
 # Full command — no prompts shown
@@ -193,42 +216,90 @@ python main.py --file notes.pdf --num 5 --format pdf --print
 python main.py --file notes.pdf --no-interactive
 ```
 
-### From Python Code
+## 🔌 Usage — FastAPI (REST API)
 
-```python
-from pipeline import MCQPipeline
+### Start the API server locally
 
-pipeline = MCQPipeline()
+```bash
+python run.py
+```
 
-# From a PDF file
-mcqs = pipeline.run_from_pdf(
-    pdf_path="notes.pdf",
-    num_questions=10,
-    difficulty="medium",     # easy | medium | hard | mixed
-    export_format="pdf",     # json | txt | pdf
-    filename="my_quiz",
-)
+Server starts at: `http://localhost:8000`
 
-# From plain text
-mcqs = pipeline.run(
-    text=open("notes.txt").read(),
-    num_questions=5,
-    difficulty="hard",
-    export_format="pdf",
-    filename="my_quiz",
-)
+Open Swagger UI at: `http://localhost:8000/docs`
 
-# Each MCQ is a dict
-for mcq in mcqs:
-    print(mcq["question"])
-    print(mcq["options"])
-    print(f"Answer: {mcq['correct_answer']}")
-    print(f"Explanation: {mcq['explanation']}")
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | API info and available endpoints |
+| GET | `/health` | Health check + API key status |
+| POST | `/generate/text` | Generate MCQs from plain text |
+| POST | `/generate/pdf` | Generate MCQs from uploaded PDF file |
+| GET | `/docs` | Interactive Swagger UI |
+| GET | `/redoc` | ReDoc API documentation |
+
+
+### Sample API Response
+
+```json
+{
+  "success": true,
+  "total_generated": 3,
+  "time_taken_seconds": 4.21,
+  "difficulty": "medium",
+  "source_filename": "notes.pdf",
+  "mcqs": [
+    {
+      "question": "What is the primary function of chlorophyll in photosynthesis?",
+      "options": {
+        "A": "To absorb water from the soil",
+        "B": "To capture light energy from the sun",
+        "C": "To produce carbon dioxide",
+        "D": "To store glucose in the roots"
+      },
+      "correct_answer": "B",
+      "explanation": "Chlorophyll captures sunlight energy which drives the photosynthesis process.",
+      "difficulty": "medium",
+      "topic": "science"
+    }
+  ]
+}
 ```
 
 ---
 
-##  Configuration (.env)
+## 🖥️ Usage — Streamlit Web UI
+
+The Streamlit UI provides an interactive web interface that calls the FastAPI backend.
+
+### Run Streamlit locally
+
+Open **two terminals** — both with venv activated:
+
+**Terminal 1 — Start FastAPI backend:**
+```bash
+python run.py
+```
+
+**Terminal 2 — Start Streamlit frontend:**
+```bash
+streamlit run Streamlit/streamlit_app.py
+```
+
+Browser opens automatically at `http://localhost:8501`
+
+### Streamlit Features
+
+- **Upload PDF tab** — drag and drop any PDF file to generate MCQs
+- **Paste Text tab** — paste raw text directly for quick generation
+- **Sidebar settings** — choose number of questions (1-20) and difficulty level
+- **Download dropdown** — choose between PDF or JSON format to download results
+- **Live stats** — shows total questions, time taken, difficulty breakdown, topics detected
+- **API health indicator** — shows green/red banner if backend is online or offline
+
+
+## 🔧 Configuration (.env)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -243,7 +314,7 @@ for mcq in mcqs:
 
 | Model | Speed | Quality | Free Quota/Day | Best For |
 |-------|-------|---------|----------------|----------|
-| `gemini-2.5-flash-lite` | Fastest | Good | 1500 req | ✅ Recommended for this project |
+| `gemini-2.5-flash-lite` | Fastest | Good | 1500 req | Recommended for this project |
 | `gemini-2.0-flash-lite` | Fast | Good | 1500 req | Alternative |
 | `gemini-2.0-flash` | Fast | Better | 1500 req | Better quality |
 | `gemini-1.5-pro` | Slow | Best | 50 req | High quality, low quota |
@@ -253,26 +324,32 @@ for mcq in mcqs:
 
 ---
 
-##  Dependencies
+## 📦 Dependencies
 
 | Package | Purpose | Required |
 |---------|---------|----------|
-| `google-genai` | New official Gemini API SDK | ✅ Yes |
-| `pdfplumber` | Primary PDF text extraction | ✅ Yes |
-| `pypdf` | Fallback PDF text extraction | ✅ Yes |
-| `scikit-learn` | TF-IDF keyword extraction | ✅ Yes |
-| `python-dotenv` | `.env` file loading | ✅ Yes |
-| `fpdf2` | PDF export of MCQs | ✅ Yes |
-| `keybert` | Better keyword extraction (optional upgrade) | ⚡ Optional |
+| `google-genai` | New official Gemini API SDK | Yes |
+| `pdfplumber` | Primary PDF text extraction | Yes |
+| `pypdf` | Fallback PDF text extraction | Yes |
+| `scikit-learn` | TF-IDF keyword extraction | Yes |
+| `python-dotenv` | `.env` file loading | Yes |
+| `fpdf2` | PDF export of MCQs | Yes |
+| `fastapi` | REST API framework | Yes |
+| `uvicorn` | ASGI server for FastAPI | Yes |
+| `python-multipart` | File upload support for FastAPI | Yes |
+| `pydantic` | Request/response validation | Yes |
+| `streamlit` | Web UI framework | Yes |
+| `requests` | HTTP calls from Streamlit to FastAPI | Yes |
+| `keybert` | Better keyword extraction | Optional |
 
 > **Note:** Use `google-genai` (new SDK). The old `google-generativeai` package is fully deprecated as of August 2025 and will not work.
 
 ---
 
-##  Where Files Go
+## 🗂️ Where Files Go
 
 ```
-mcq_generator/
+MCQ_Generator/
 ├── notes.pdf              ← Put your INPUT PDF here
 ├── output/
 │   └── notes_mcqs.pdf     ← Generated MCQs saved here automatically
@@ -295,7 +372,7 @@ python main.py --file "/home/you/Downloads/notes.pdf"
 
 ---
 
-##  Running Tests
+## 🧪 Running Tests
 
 All NLP and utility tests work **without a Gemini API key** (no API calls made):
 
@@ -309,15 +386,18 @@ python tests/test_pipeline.py
 # Run PDF reader tests
 python tests/test_pdf_reader.py
 
+# Run API endpoint tests (no real API calls — uses mocks)
+pytest tests/test_api.py -v
+
 # Run all tests with pytest
 pytest tests/ -v
 ```
 
-Expected: **53 tests, 0 failures**
+Expected: **53+ tests, 0 failures**
 
 ---
 
-##  Sample Output (JSON)
+## 📋 Sample Output (JSON)
 
 ```json
 {
@@ -343,38 +423,22 @@ Expected: **53 tests, 0 failures**
 
 ---
 
-##  Common Errors & Fixes
+## 🚫 Common Errors & Fixes
 
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `404 model not found` | Deprecated model name | Change `GEMINI_MODEL=gemini-2.5-flash-lite` in `.env` |
 | `429 quota exceeded` | Daily free limit hit | Wait 24hrs or switch to `gemini-2.5-flash-lite` |
 | `FutureWarning: google.generativeai deprecated` | Old SDK installed | Run `pip uninstall google-generativeai -y` then `pip install google-genai` |
-| `ModuleNotFoundError` | Wrong directory or venv not active | Run from `mcq_generator/` folder with venv activated |
+| `ModuleNotFoundError` | Wrong directory or venv not active | Run from `MCQ_Generator/` folder with venv activated |
 | `Could not extract text from PDF` | Scanned/image PDF | Use a PDF with selectable text |
-| `0 MCQs generated` | API quota + all chunks failed | Check API key, check quota at [ai.dev/rate-limit](https://ai.dev/rate-limit) |
+| `0 MCQs generated` | API quota + all chunks failed | Check API key and quota at [ai.dev/rate-limit](https://ai.dev/rate-limit) |
+| `API is offline` in Streamlit | FastAPI not running | Run `python run.py` in a separate terminal first |
+| Render deploy fails | Missing env variable | Add `GEMINI_API_KEY` in Render dashboard environment variables |
+| First Render request slow | Free tier sleep | Normal — waits 30-60s to wake up, subsequent requests are fast |
 
----
 
-##  .gitignore
-
-The `.gitignore` file protects sensitive and large files from being pushed to GitHub:
-
-```
-venv/          ← virtual environment (100MB+, never commit)
-.env           ← your secret API key (never share)
-__pycache__/   ← Python bytecode (auto-generated)
-output/        ← generated MCQ files
-*.pdf          ← input PDF files
-*.log
-.vscode/
-.idea/
-.DS_Store
-```
-
----
-
-##  Why Hybrid (NLP + GenAI)?
+## 🤖 Why Hybrid (NLP + GenAI)?
 
 | Component | Handled By | Reason |
 |-----------|------------|--------|
@@ -382,30 +446,9 @@ output/        ← generated MCQ files
 | Keyword extraction | NLP | Guides GenAI to focus on key concepts |
 | Topic detection | NLP | Enables difficulty-appropriate prompting |
 | Difficulty scoring | NLP | Automatic per-chunk analysis |
-| PDF reading | NLP (pdfplumber) | Layout-aware, table support |
+| PDF reading | NLP (pdfplumber) | Layout-aware, table support, diagram skipping |
 | Question writing | GenAI | Complex language task — GenAI excels |
 | Distractor generation | GenAI | Hardest NLP problem — GenAI handles it well |
 | Deduplication | NLP | Fast, deterministic, no API cost |
 | Answer validation | NLP | Rule-based, reliable, instant |
 
----
-
-##  Daily Workflow
-
-```bash
-# 1. Go to project folder
-cd mcq_generator
-
-# 2. Activate virtual environment
-venv\Scripts\activate        # Windows
-source venv/bin/activate     # Mac/Linux
-
-# 3. Run the generator
-python main.py --file your_notes.pdf
-
-# 4. Find your output
-#    output/your_notes_mcqs.pdf
-
-# 5. Deactivate when done
-deactivate
-```

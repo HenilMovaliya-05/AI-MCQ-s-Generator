@@ -1,0 +1,24 @@
+# render.yaml
+# -----------
+# Deployment configuration for Render.com (free hosting)
+# Push this file to GitHub and connect your repo to Render
+
+services:
+  - type: web
+    name: ai-mcq-generator-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false          # Set this manually in Render dashboard
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash-lite
+      - key: MCQ_PER_CHUNK
+        value: "3"
+      - key: DEFAULT_DIFFICULTY
+        value: mixed
+      - key: OUTPUT_FORMAT
+        value: json
+      - key: MAX_TOKENS
+        value: "2048"

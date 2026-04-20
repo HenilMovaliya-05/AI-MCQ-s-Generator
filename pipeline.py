@@ -95,12 +95,12 @@ class MCQPipeline:
         self._log(verbose, "\n🚀 MCQ Generator Pipeline Starting...")
         self._log(verbose, f"   Target: {num_questions} questions | Difficulty: {difficulty}\n")
 
-        # ── Step 1: NLP - Text Chunking ─────────────────────────────────
+        # Step 1: NLP - Text Chunking 
         self._log(verbose, "📄 Step 1: Chunking text...")
         chunks = self.chunker.auto_chunk(text)
         self._log(verbose, f"   → {len(chunks)} chunk(s) created\n")
 
-        # ── Step 2: NLP - Analysis per chunk ────────────────────────────
+        # Step 2: NLP - Analysis per chunk
         all_mcqs = []
         mcqs_per_chunk = max(1, round(num_questions / len(chunks)))
 
@@ -118,7 +118,7 @@ class MCQPipeline:
 
             self._log(verbose, f"   → Topic: {topic} | Difficulty: {chunk_difficulty} | Keywords: {', '.join(keywords[:5])}\n")
 
-            # ── Step 3: Build structured prompt ─────────────────────────
+            # Step 3: Build structured prompt 
             self._log(verbose, f"📝 Step 3: Building prompt for chunk {i}...")
             prompt = self.prompt_builder.build_mcq_prompt(
                 chunk=chunk,
@@ -128,7 +128,7 @@ class MCQPipeline:
                 num_questions=mcqs_per_chunk,
             )
 
-            # ── Step 4: GenAI - Generate MCQs ───────────────────────────
+            # Step 4: GenAI - Generate MCQs 
             self._log(verbose, f"🤖 Step 4: Calling Gemini API for chunk {i}...")
             try:
                 chunk_mcqs = self.gemini.generate_mcqs(prompt)
@@ -137,7 +137,7 @@ class MCQPipeline:
             except Exception as e:
                 self._log(verbose, f"   ⚠ Skipping chunk {i} due to error: {e}\n")
 
-        # ── Step 5: NLP Post-processing ──────────────────────────────────
+        # Step 5: NLP Post-processing
         self._log(verbose, "🧹 Step 5: Post-processing (dedup, validation, cleaning)...")
         processed = self.postprocessor.process(all_mcqs)
 
@@ -147,7 +147,7 @@ class MCQPipeline:
         stats = self.postprocessor.get_stats(processed)
         self._log(verbose, f"   → {stats['total']} final MCQs | By difficulty: {stats.get('by_difficulty', {})}\n")
 
-        # ── Step 6: Export ───────────────────────────────────────────────
+        # Step 6: Export 
         if export_format and processed:
             self._log(verbose, f"💾 Step 6: Exporting as {export_format.upper()}...")
             path = self.exporter.export(processed, format=export_format, filename=filename)
